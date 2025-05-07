@@ -1,0 +1,70 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_PROCESSES 10
+#define MAX_RESOURCES 10
+
+int available[MAX_RESOURCES];
+int max[MAX_PROCESSES][MAX_RESOURCES];
+int allocation[MAX_PROCESSES][MAX_RESOURCES];
+int need[MAX_PROCESSES][MAX_RESOURCES];
+int work[MAX_RESOURCES];
+bool finish[MAX_PROCESSES];
+int safe_sequence[MAX_PROCESSES];
+int n, m; // Number of processes and resources
+
+// Function to check if the system is in a safe state
+bool is_safe() {
+    // Step 1: Initialize work and finish
+    for (int i = 0; i < m; i++) {
+        work[i] = available[i];
+    }
+    
+    for (int i = 0; i < n; i++) {
+        finish[i] = false;
+    }
+    
+    int count = 0;
+    bool found;
+    
+    // Step 2: Find a process that can be executed
+    while (count < n) {
+        found = false;
+        
+        for (int i = 0; i < n; i++) {
+            if (!finish[i]) {
+                bool can_execute = true;
+                
+                for (int j = 0; j < m; j++) {
+                    if (need[i][j] > work[j]) {
+                        can_execute = false;
+                        break;
+                    }
+                }
+                
+                if (can_execute) {
+                    // Step 3: Execute the process and release its resources
+                    for (int j = 0; j < m; j++) {
+                        work[j] += allocation[i][j];
+                    }
+                    
+                    safe_sequence[count] = i;
+                    finish[i] = true;
+                    count++;
+                    found = true;
+                    
+                    printf("P%d is visited(", i);
+                    for (int j = 0; j < m; j++) {
+                        printf(" %d", work[j]);
+                        if (j < m - 1) printf(" ");
+                    }
+                    printf(")\n");
+                }
+            }
+        }
+        
+        // If no process can be executed, the system is not in a safe state
+        if (!found) {
+            return false;
+        }
+    }
